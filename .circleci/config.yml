@@ -112,7 +112,7 @@ jobs:
       
       steps:
       - checkout
-      
+
       - run:
           name: Push to Docker Hub
           command: |
@@ -142,7 +142,7 @@ jobs:
           name: Deploy Docker image to EKS cluster
           command: |
             sed -i "s|IMAGE|$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$DOCKER_USERNAME/$APPLICATION:latest|g" manifest/*yaml
-            kubectl apply -f kubernetes/deployment.yaml
-            kubectl apply -f kubernetes/service.yaml
+            kubectl apply -f kubernestes/deployment.yaml
+            kubectl apply -f kubernestes/service.yaml
             kubectl get pods
             kubectl get services
