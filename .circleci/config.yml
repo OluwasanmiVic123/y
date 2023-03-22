@@ -98,7 +98,7 @@ jobs:
     docker:
       - image: cimg/python:3.10
     steps:
-    
+
       - checkout
 
       - run:
@@ -147,3 +147,28 @@ jobs:
             kubectl apply -f kubernestes/service.yaml
             kubectl get pods
             kubectl get services
+
+
+workflows:
+  version: 2
+  blog-deployment:
+    jobs:
+      - terraform-initial
+      - terraform-planning:
+          requires: [terraform-initial]
+      - hold-apply:
+          type: approval
+          requires: [terraform-planning]
+      - terraform-applying:
+          requires: [hold-apply]
+      - terraform-stop:
+          requires: [terraform-applying]
+      - hold-destroy:
+          type: approval
+          requires: [terraform-stop]
+      - terraform-destroy:
+          requires: [hold-destroy]  
+      - build-blog-app:
+           requires: [terraform-applying]
+      - deploy-blog-app:
+          requires: [build-blog-app]
