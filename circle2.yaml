@@ -1,0 +1,23 @@
+version: 2.1
+jobs:
+  build:
+    docker:
+      - image: circleci/python:3.8.1
+    steps:
+      - checkout
+      - run: docker pull <docker-hub-username>/<docker-image-name>:<docker-image-tag>
+      - run: docker build --cache-from <docker-hub-username>/<docker-image-name>:<docker-image-tag> -t <docker-hub-username>/<docker-image-name>:<docker-image-tag> .
+      - run: docker push <docker-hub-username>/<docker-image-name>:<docker-image-tag>
+  deploy:
+    docker:
+      - image: bitnami/kubectl:latest
+    steps:
+      - checkout
+      - run:
+          name: Install kubectl
+          command: |
+            echo "deb https://dl.k8s.io/deb/stable main" | sudo tee -a /etc/apt/sources.list.d/kubernetes.list
+            curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | sudo apt-key add -
+            sudo apt-get update && sudo apt-get install -y kubectl
+      - run: kubectl apply -f kubernetes/deployment.yaml
+      - run: kubectl apply -f kubernetes/service.yaml

@@ -1,0 +1,21 @@
+# version: 2.1
+
+# jobs:
+#   build-and-deploy:
+#     docker:
+#       - image: docker:stable
+#     steps:
+#       - checkout
+#       - run: docker build -t YOUR_DOCKER_IMAGE_FROM_DOCKER_HUB .
+#       - run: echo YOUR_DOCKER_PASSWORD_FROM_DOCKER_HUB | docker login -u YOUR_DOCKER_USERNAME_FROM_DOCKER_HUB --password-stdin
+#       - run: docker push YOUR_DOCKER_IMAGE_FROM_DOCKER_HUB
+#       - run:
+#           name: Deploy to Kubernetes
+#           command: |
+#             curl https://raw.githubusercontent.com/kubernetes/helm/master/scripts/get-helm-3 | bash
+#             helm upgrade --install my-app ./my-app-chart --set image.tag=YOUR_DOCKER_IMAGE_FROM_DOCKER_HUB_TAG
+#     environment:
+#       DOCKER_USERNAME:
+#         value: YOUR_DOCKER_USERNAME_FROM_DOCKER_HUB
+#       DOCKER_PASSWORD:
+#         value: YOUR_DOCKER_PASSWORD_FROM_DOCKER_HUB
