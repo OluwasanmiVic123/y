@@ -110,8 +110,8 @@ jobs:
             tar -xz -C /tmp -f /tmp/docker-$VER.tgz
             sudo mv /tmp/docker/* /usr/bin
       
-      steps:
-      - checkout
+      
+      - setup_remote_docker
 
       - run:
           name: Push to Docker Hub
