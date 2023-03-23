@@ -15,7 +15,7 @@ provider "aws" {
 data "aws_availability_zones" "available" {}
 
 locals {
-  cluster_name = "myeks"
+  cluster_name = "myekscluster"
 }
 
 resource "random_string" "suffix" {
