@@ -21,3 +21,58 @@ jobs:
             sudo apt-get update && sudo apt-get install -y kubectl
       - run: kubectl apply -f kubernetes/deployment.yaml
       - run: kubectl apply -f kubernetes/service.yaml
+
+
+
+ build-blog-app:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+
+      - checkout
+
+      - run:
+        # installs a docker client that will be used to run the docker commands
+          name: Install Docker client
+          command: |
+            set -x
+            VER="17.03.0-ce"
+            curl -L -o /tmp/docker-$VER.tgz https://get.docker.com/builds/Linux/x86_64/docker-$VER.tgz
+            tar -xz -C /tmp -f /tmp/docker-$VER.tgz
+            sudo mv /tmp/docker/* /usr/bin
+      
+      
+      - setup_remote_docker
+
+      - run:
+          name: Push to Docker Hub
+          command: |
+            echo "$DOCKER_PASSWORD"
+            docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+            docker pull $DOCKER_USERNAME/$APPLICATION:$IMAGE_TAG
+            docker build --cache-from $DOCKER_USERNAME/$APPLICATION:$IMAGE_TAG -t $DOCKER_USERNAME/$APPLICATION:$IMAGE_TAG .
+            docker push $DOCKER_USERNAME/$APPLICATION:$IMAGE_TAG
+  deploy-blog-app:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - install_awscli
+      - run:
+          name: Install kubectl
+          command: |
+            curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+            chmod +x ./kubectl
+            sudo mv ./kubectl /usr/local/bin/kubectl
+      - run:
+          name: Configure kubectl
+          command: |
+            aws eks --region $AWS_REGION update-kubeconfig --name $EKS_CLUSTER_NAME
+      - run:
+          name: Deploy Docker image to EKS cluster
+          command: |
+            sed -i "s|IMAGE|$AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/$DOCKER_USERNAME/$APPLICATION:latest|g" manifest/*yaml
+            kubectl apply -f kubernestes/deployment.yaml
+            kubectl apply -f kubernestes/service.yaml
+            kubectl get pods
+            kubectl get services
